@@ -2,7 +2,7 @@ function getMockPrices() {
   return [
     {
       platform: "A",
-      marketId: "aus-vs-end-t20",
+      marketId: "ind-vs-end-t20",
       yesPrice: 0.41,
       noPrice: 0.59,
       fees: 0.02,
