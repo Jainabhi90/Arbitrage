@@ -64,38 +64,38 @@
   </table>
 
   <script>
-    async function refresh() {
-      try {
-        const res = await fetch('http://localhost:3000/opportunities')
-        const data = await res.json()
+   async function refresh() {
+  try {
+    const res = await fetch('http://localhost:3000/opportunities')
+    const data = await res.json()
 
-        const tbody = document.getElementById('tbody')
-        const status = document.getElementById('status')
+    const tbody = document.getElementById('tbody')
+    const status = document.getElementById('status')
 
-        status.textContent = 'Last updated: ' + new Date().toLocaleTimeString()
+    status.textContent = `Last scanned: ${data.lastScanned} | Pairs monitored: ${data.totalPairs}`
 
-        if (data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" class="no-data">No opportunities right now.</td></tr>'
-          return
-        }
-
-        tbody.innerHTML = data.map(op => `
-          <tr>
-            <td>${op.market}</td>
-            <td>${op.yesPrice}</td>
-            <td>${op.noPrice}</td>
-            <td>${op.total.toFixed(2)}</td>
-            <td class="arb">+${(op.profit * 100).toFixed(1)}%</td>
-          </tr>
-        `).join('')
-
-      } catch (err) {
-        document.getElementById('status').textContent = 'Server offline - retrying...'
-      }
+    if (data.opportunities.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="no-data">No arb opportunities right now. Scanning...</td></tr>'
+      return
     }
 
-    setInterval(refresh, 1000)
-    refresh()
+    tbody.innerHTML = data.opportunities.map(op => `
+      <tr>
+        <td>${op.market}</td>
+        <td>${op.yesPrice.toFixed(3)}</td>
+        <td>${op.noPrice.toFixed(3)}</td>
+        <td>${op.total.toFixed(3)}</td>
+        <td class="arb">+${(op.profit * 100).toFixed(2)}%</td>
+      </tr>
+    `).join('')
+
+  } catch (err) {
+    document.getElementById('status').textContent = 'Server offline - retrying...'
+  }
+}
+
+setInterval(refresh, 2000)
+refresh()
   </script>
 </body>
 </html>
