@@ -603,6 +603,8 @@ footer {
 }
 .calc-res.flash { animation: cflash .4s ease; }
 @keyframes cflash { 0%{ background: rgba(0,217,126,.2); } 100%{ background: var(--pbg); } }
+.calc-res.empty { background: var(--bg2) !important; border-color: var(--border2) !important; }
+.calc-res.empty .cr-l, .calc-res.empty .cr-v { color: var(--text3) !important; }
 .cr-l { font-size: 12px; color: var(--profit); font-weight: 600; font-family: var(--mono); }
 .cr-v { font-size: 26px; font-weight: 600; color: var(--profit); font-family: var(--mono); letter-spacing: -.04em; }
 .calc-note { font-size: 11px; color: var(--text3); margin-top: 10px; line-height: 1.7; font-family: var(--mono); }

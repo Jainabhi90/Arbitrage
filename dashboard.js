@@ -35,12 +35,27 @@ window.calcP = function(){
   const camtEl = document.getElementById('camt');
   if(!camtEl) return;
   const amt=parseFloat(camtEl.value)||0
-  document.getElementById('cres').textContent='$'+Math.round(amt*bestP).toLocaleString()
-  document.getElementById('cpct').textContent='+'+(bestP*100).toFixed(2)+'%'
-  const res=document.getElementById('calc-res')
+  const isZero = bestP <= 0;
+  
+  const cres = document.getElementById('cres');
+  const cpct = document.getElementById('cpct');
+  const res = document.getElementById('calc-res');
+  
+  if (isZero) {
+    cres.textContent = '$0';
+    cpct.textContent = '0.00%';
+    cpct.style.color = 'var(--text4)'; 
+    res.classList.add('empty');
+  } else {
+    cres.textContent = '$'+Math.round(amt*bestP).toLocaleString();
+    cpct.textContent = '+'+(bestP*100).toFixed(2)+'%';
+    cpct.style.color = 'var(--accent)';
+    res.classList.remove('empty');
+  }
+  
   res.classList.remove('flash')
   void res.offsetWidth
-  res.classList.add('flash')
+  if (!isZero) res.classList.add('flash')
 }
 
 window.togglePause = function(){
@@ -64,6 +79,7 @@ function renderOpps(ops){
   const g=document.getElementById('opp-grid')
   if(!g) return;
   if(!ops.length){
+    bestP = 0; window.calcP();
     const since=timeSince(lastArbTime)
     g.innerHTML=`<div class="empty-state">
       <div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:6px">Markets are efficient right now</div>
