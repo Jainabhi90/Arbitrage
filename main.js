@@ -1,10 +1,7 @@
 // ─── DYNAMIC API URL ─────────────────────────────────────────────────────────
-const isLocalRuntime =
-  window.location.protocol === 'file:' ||
-  window.location.hostname === 'localhost' ||
-  window.location.hostname === '127.0.0.1'
-
-const API_URL = isLocalRuntime ? 'http://localhost:3000' : 'https://api.arbdetector.com'
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+  ? 'http://localhost:3000' 
+  : 'https://api.arbdetector.com'; 
 
 // ─── BEAM ANIMATION ─────────────────────────────────────────────────────────
 const canvas = document.getElementById('beams-canvas')
@@ -218,14 +215,8 @@ function handleWL(e){
 // ─── LIVE STATS ─────────────────────────────────────────────────────────────
 async function fetchStats(){
   try{
-    const r = await fetch(`${API_URL}/opportunities`)
-    if (!r.ok) {
-      throw new Error(`HTTP ${r.status}`)
-    }
-    const d = await r.json()
-    if (!d || !Array.isArray(d.opportunities)) {
-      throw new Error('Invalid opportunities payload')
-    }
+    const r   = await fetch(`${API_URL}/opportunities`)
+    const d   = await r.json()
     const ops = d.opportunities || []
     const pairCount = Number(d.totalPairs) || 0
     const hPairs = document.getElementById('h-pairs')
@@ -246,16 +237,8 @@ async function fetchStats(){
   } catch(e){
     const s = document.getElementById('t-status')
     if(s) {
-      s.textContent = 'SERVER OFFLINE'; s.className = 'tb-demo'
+      s.textContent = 'DEMO DATA'; s.className = 'tb-demo'
     }
-    const hPairs = document.getElementById('h-pairs')
-    if (hPairs) hPairs.textContent = '0'
-    const harblEl = document.getElementById('h-arb')
-    if (harblEl) harblEl.textContent = '0'
-    const hbest = document.getElementById('h-best')
-    if (hbest) hbest.textContent = '—'
-    const tpct1 = document.getElementById('t-pct1')
-    if (tpct1) tpct1.textContent = '—'
   }
 }
 if(document.getElementById('h-arb')) {
