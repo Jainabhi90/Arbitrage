@@ -8,13 +8,18 @@ const { registerOrder } = require('./orderRouter')
 
 const PORT = Number(process.env.PORT || 3000)
 const TOPIC = (process.env.ARBITRAGE_TOPIC || 'election').toLowerCase()
-const SCAN_INTERVAL_MS = Number(process.env.SCAN_INTERVAL_MS || 15000)
+const SCAN_INTERVAL_MS = Number(process.env.SCAN_INTERVAL_MS || 5000)
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000
 
 // memory store - latest results live here
 let latestOpportunities = []
 let latestNearMisses = []
 let latestWeekCandidates = []
+let latestArbStatus = {
+  hasArb: false,
+  nearestGapPct: null,
+  scannedAt: null
+}
 let lastScanned = null
 let lastScanStats = {
   totalPairs: 0,
@@ -192,6 +197,12 @@ async function scanMarkets() {
       .slice(0, 20)
 
     lastScanned = new Date().toLocaleTimeString()
+    const nearestGapPct = latestNearMisses.length ? latestNearMisses[0].gap : null
+    latestArbStatus = {
+      hasArb: latestOpportunities.length > 0,
+      nearestGapPct,
+      scannedAt: new Date().toISOString()
+    }
     lastScanStats = {
       totalPairs: pairs.length,
       platformACount: platformA.length,
@@ -230,6 +241,7 @@ async function handleRequest(req, res) {
       opportunities: latestOpportunities,
       nearMisses: latestNearMisses,
       weekCandidates: latestWeekCandidates,
+      arbStatus: latestArbStatus,
       lastScanned,
       totalPairs: lastScanStats.totalPairs,
       platformACount: lastScanStats.platformACount,

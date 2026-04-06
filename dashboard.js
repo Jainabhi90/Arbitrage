@@ -1,8 +1,9 @@
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
   ? 'http://localhost:3000' 
   : 'https://api.arbdetector.com'; 
+const UI_SCAN_SECONDS = 3
 
-let scanN=0,total=0,cd=5,paused=false,bestP=0.016
+let scanN=0,total=0,cd=UI_SCAN_SECONDS,paused=false,bestP=0.016
 let prevKeys=new Set(),aliveMap={},lastArbTime=null
 let currentTotalPairs=0
 let platformALabel='KALSHI'
@@ -34,7 +35,7 @@ window.calcP = function(){
   const camtEl = document.getElementById('camt');
   if(!camtEl) return;
   const amt=parseFloat(camtEl.value)||0
-  document.getElementById('cres').textContent='₹'+Math.round(amt*bestP).toLocaleString()
+  document.getElementById('cres').textContent='$'+Math.round(amt*bestP).toLocaleString()
   document.getElementById('cpct').textContent='+'+(bestP*100).toFixed(2)+'%'
   const res=document.getElementById('calc-res')
   res.classList.remove('flash')
@@ -97,7 +98,7 @@ function renderOpps(ops){
         <div class="oc-pill">NO (${platformBLabel}) <b>${o.noPrice.toFixed(2)}</b></div>
         <div class="oc-pill">total <b>${o.total.toFixed(2)}</b></div>
       </div>
-      <div class="oc-hint">On ₹10,000 → guaranteed <span>₹${Math.round(10000*o.profit)}</span></div>
+      <div class="oc-hint">On $10,000 → guaranteed <span>$${Math.round(10000*o.profit)}</span></div>
       <div class="oc-fresh">prices at ${now}</div>
     </div>`
   }).join('')
@@ -212,7 +213,7 @@ function updateStats(ops,t){
 }
 
 async function scan(){
-  if(paused)return; cd=5
+  if(paused)return; cd=UI_SCAN_SECONDS
   const now=new Date().toLocaleTimeString()
   const dtimeh = document.getElementById('d-timeh');
   if(!dtimeh) return;
@@ -225,7 +226,13 @@ async function scan(){
     currentWeekCandidates = Array.isArray(d.weekCandidates) ? d.weekCandidates : []
     updatePairCounters(currentTotalPairs)
     updatePlatformBadges(d)
-    dtimeh.textContent='server connected'
+    if (d.arbStatus?.hasArb) {
+      dtimeh.textContent = 'arb condition live'
+    } else if (Number.isFinite(d.arbStatus?.nearestGapPct)) {
+      dtimeh.textContent = `nearest ${Number(d.arbStatus.nearestGapPct).toFixed(2)}% away`
+    } else {
+      dtimeh.textContent = 'server connected'
+    }
     updateStats(d.opportunities,now)
     renderOpps(d.opportunities)
     renderNear(currentNearMisses)
@@ -247,6 +254,6 @@ async function scan(){
 
 if (document.getElementById('dnav')) {
   setInterval(()=>{if(!paused){cd--;document.getElementById('dcd').textContent='next in '+Math.max(cd,0)+'s'}},1000)
-  setInterval(scan,5000)
+  setInterval(scan,UI_SCAN_SECONDS * 1000)
   scan(); window.calcP()
 }

@@ -179,7 +179,7 @@ function calcMath(){
     resRow.className   = 'mb-row res'
     resLbl.style.color = 'var(--profit)'
     resLbl.textContent = 'Guaranteed profit'
-    note.textContent   = 'On ₹10,000 → guaranteed ₹' + Math.round(10000*(profit/100)) + ' profit'
+    note.textContent   = 'On $10,000 → guaranteed $' + Math.round(10000*(profit/100)) + ' profit'
     note.style.color   = 'var(--profit)'
   } else {
     profEl.textContent = profit.toFixed(2) + '%'
@@ -187,7 +187,7 @@ function calcMath(){
     resRow.className   = 'mb-row res-bad'
     resLbl.style.color = 'var(--danger)'
     resLbl.textContent = 'No arb — loss at these prices'
-    note.textContent   = 'Total cost exceeds 1.00 — On ₹10,000 → guaranteed ₹' + Math.abs(Math.round(10000*(profit/100))) + ' loss'
+    note.textContent   = 'Total cost exceeds 1.00 — On $10,000 → guaranteed $' + Math.abs(Math.round(10000*(profit/100))) + ' loss'
     note.style.color   = 'var(--danger)'
   }
 }
@@ -243,5 +243,5 @@ async function fetchStats(){
 }
 if(document.getElementById('h-arb')) {
   fetchStats()
-  setInterval(fetchStats, 10000)
+  setInterval(fetchStats, 5000)
 }
