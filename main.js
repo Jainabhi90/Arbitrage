@@ -162,9 +162,26 @@ window.addEventListener('scroll', () => {
 function calcMath(){
   const yesEl = document.getElementById('m-yes');
   if (!yesEl) return;
-  const yes  = parseFloat(yesEl.value)  || 0
-  const no   = parseFloat(document.getElementById('m-no').value)   || 0
-  const fee  = parseFloat(document.getElementById('m-fee').value)  || 0
+
+  // Clamp inputs to valid prediction market price range
+  let yes = parseFloat(yesEl.value) || 0
+  let no  = parseFloat(document.getElementById('m-no').value)  || 0
+  let fee = parseFloat(document.getElementById('m-fee').value) || 0
+
+  // Validate: prices must be between 0.01 and 0.99
+  const validationMsg = document.getElementById('m-validation')
+  if (yes < 0.01 || yes > 0.99 || no < 0.01 || no > 0.99) {
+    if (validationMsg) {
+      validationMsg.textContent = '⚠ Prices must be between 0.01 and 0.99'
+      validationMsg.style.display = 'block'
+    }
+    yes = Math.min(Math.max(yes, 0.01), 0.99)
+    no  = Math.min(Math.max(no,  0.01), 0.99)
+  } else {
+    if (validationMsg) validationMsg.style.display = 'none'
+  }
+  fee = Math.min(Math.max(fee, 0), 0.1)
+
   const total   = yes + no + fee
   const profit  = (1 - total) * 100
   document.getElementById('m-total').textContent = total.toFixed(2)
@@ -245,3 +262,38 @@ if(document.getElementById('h-arb')) {
   fetchStats()
   setInterval(fetchStats, 5000)
 }
+
+// ─── MOBILE MENU ─────────────────────────────────────────────────────────────
+function toggleMobileMenu(){
+  const menu = document.getElementById('n-mobile-menu')
+  const btn  = document.getElementById('n-hamburger')
+  if (!menu || !btn) return
+  const isOpen = menu.classList.toggle('open')
+  btn.classList.toggle('open', isOpen)
+  btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false')
+  menu.setAttribute('aria-hidden', isOpen ? 'false' : 'true')
+}
+
+function scrollToSection(id){
+  const el = document.getElementById(id)
+  if (el) el.scrollIntoView({ behavior: 'smooth' })
+  // Close mobile menu after nav
+  const menu = document.getElementById('n-mobile-menu')
+  const btn  = document.getElementById('n-hamburger')
+  if (menu) { menu.classList.remove('open'); menu.setAttribute('aria-hidden','true') }
+  if (btn)  { btn.classList.remove('open');  btn.setAttribute('aria-expanded','false') }
+}
+
+// Close mobile menu on outside click
+document.addEventListener('click', function(e){
+  const menu = document.getElementById('n-mobile-menu')
+  const btn  = document.getElementById('n-hamburger')
+  if (!menu || !btn) return
+  if (menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)){
+    menu.classList.remove('open')
+    menu.setAttribute('aria-hidden','true')
+    btn.classList.remove('open')
+    btn.setAttribute('aria-expanded','false')
+  }
+})
+

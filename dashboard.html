@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ArbDetector — Live Dashboard</title>
   <meta name="description" content="Live arbitrage dashboard — real-time opportunities across Kalshi and Polymarket.">
+  <meta property="og:title" content="ArbDetector — Live Dashboard">
+  <meta property="og:description" content="Real-time arbitrage scanner across Kalshi and Polymarket. Find guaranteed profit before it closes.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://arbitrage-xi-nine.vercel.app/og-image.png">
+  <meta property="og:url" content="https://arbitrage-xi-nine.vercel.app/dashboard.html">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%2316a34a'/><text x='16' y='21' text-anchor='middle' font-size='14' font-weight='bold' fill='white' font-family='monospace'>A</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,6 +34,12 @@
     <button class="pause-btn" id="pbtn" onclick="togglePause()" aria-label="Pause or Resume Scanning">⏸ pause</button>
   </div>
 </nav>
+
+<!-- MOCK MODE BANNER -->
+<div class="mock-banner" id="mock-banner" style="display:none" role="alert" aria-live="polite">
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2a6 6 0 100 12A6 6 0 008 2zm0 3v3m0 3h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  <span>Live API offline — showing <strong>sample data</strong> for demonstration</span>
+</div>
 
 <div class="stat-bar" aria-label="Global Statistics">
   <div class="sb-item"><div class="sb-label">PAIRS</div><div class="sb-val" id="d-pairs">—</div><div class="sb-hint">monitored</div></div>

@@ -8,6 +8,11 @@
   <meta property="og:title" content="ArbDetector — Find arbitrage before it closes">
   <meta property="og:description" content="Scan two prediction markets simultaneously. Profit guaranteed, regardless of outcome.">
   <meta property="og:type" content="website">
+  <meta property="og:image" content="https://arbitrage-xi-nine.vercel.app/og-image.png">
+  <meta property="og:url" content="https://arbitrage-xi-nine.vercel.app/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ArbDetector — Find arbitrage before it closes">
+  <meta name="twitter:description" content="Scan two prediction markets simultaneously. Profit guaranteed, regardless of outcome.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%2316a34a'/><text x='16' y='21' text-anchor='middle' font-size='14' font-weight='bold' fill='white' font-family='monospace'>A</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,13 +27,25 @@
     <div class="n-beta">BETA</div>
   </div>
   <div class="n-links" id="n-links">
-    <div class="n-link" data-section="how" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">How it works</div>
-    <div class="n-link" data-section="math" onclick="document.getElementById('math').scrollIntoView({behavior:'smooth'})">The math</div>
-    <div class="n-link" data-section="teaser" onclick="document.getElementById('teaser').scrollIntoView({behavior:'smooth'})">Dashboard</div>
-    <div class="n-link" data-section="waitlist" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Get notified</div>
+    <button class="n-link" data-section="how" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">How it works</button>
+    <button class="n-link" data-section="math" onclick="document.getElementById('math').scrollIntoView({behavior:'smooth'})">The math</button>
+    <button class="n-link" data-section="teaser" onclick="document.getElementById('teaser').scrollIntoView({behavior:'smooth'})">Dashboard</button>
+    <button class="n-link" data-section="waitlist" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Get notified</button>
   </div>
-  <a href="dashboard.html" style="text-decoration:none"><button class="n-cta">Open Dashboard →</button></a>
+  <button class="n-hamburger" id="n-hamburger" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="n-mobile-menu" onclick="toggleMobileMenu()">
+    <span></span><span></span><span></span>
+  </button>
+  <a href="dashboard.html" style="text-decoration:none" class="n-cta-wrap"><button class="n-cta">Open Dashboard →</button></a>
 </nav>
+
+<!-- MOBILE MENU -->
+<div class="n-mobile-menu" id="n-mobile-menu" aria-hidden="true">
+  <button class="nm-link" data-section="how" onclick="scrollToSection('how')">How it works</button>
+  <button class="nm-link" data-section="math" onclick="scrollToSection('math')">The math</button>
+  <button class="nm-link" data-section="teaser" onclick="scrollToSection('teaser')">Dashboard</button>
+  <button class="nm-link" data-section="waitlist" onclick="scrollToSection('waitlist')">Get notified</button>
+  <a href="dashboard.html" class="nm-cta">Open Dashboard →</a>
+</div>
 
 <!-- HERO WITH BEAM ANIMATION -->
 <main>
@@ -48,7 +65,7 @@
       <button class="btn-sec" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">How it works</button>
     </div>
     <div class="h-stats">
-      <div class="h-stat"><div class="h-stat-val" id="h-pairs">—</div><div class="h-stat-lbl">PAIRS MONITORED</div></div>
+      <div class="h-stat"><div class="h-stat-val" id="h-pairs">50+</div><div class="h-stat-lbl">PAIRS MONITORED</div></div>
       <div class="h-stat"><div class="h-stat-val" id="h-arb">2</div><div class="h-stat-lbl">ACTIVE ARB</div></div>
       <div class="h-stat"><div class="h-stat-val" id="h-best">+1.6%</div><div class="h-stat-lbl">BEST PROFIT</div></div>
       <div class="h-stat"><div class="h-stat-val">5s</div><div class="h-stat-lbl">SCAN SPEED</div></div>
@@ -116,6 +133,7 @@
             <label for="m-fee" class="mb-lbl">Both platform fees</label>
             <input class="mb-input" id="m-fee" type="number" value="0.05" step="0.01" min="0" max="0.2" oninput="calcMath()">
           </div>
+          <div id="m-validation" role="alert" aria-live="polite"></div>
           <div class="mb-row"><div class="mb-lbl">Total spent</div><div class="mb-val" id="m-total">0.98</div></div>
           <div class="mb-row"><div class="mb-lbl">One bet always pays</div><div class="mb-val">1.00</div></div>
           <div class="mb-row res" id="m-res-row">
@@ -210,29 +228,55 @@
     <div class="f-brand-wrap">
       <div class="f-brand"><div class="ndot"></div>ArbDetector</div>
       <div class="f-tagline">Find arbitrage before it closes.</div>
+      <div class="f-desc">Scanning Kalshi &amp; Polymarket every 5s.<br>Risk-free profit when gaps open.</div>
+      <div class="f-social-strip">
+        <a class="f-social-btn" href="https://github.com/Jainabhi90/Arbitrage" target="_blank" rel="noopener" aria-label="View source on GitHub">
+          <svg class="f-social-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.021c0 4.428 2.865 8.185 6.839 9.504.5.092.682-.217.682-.483 0-.237-.009-.868-.013-1.703-2.782.605-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .268.18.58.688.482C19.138 20.203 22 16.447 22 12.021 22 6.484 17.523 2 12 2z"/></svg>
+          <span class="f-social-tip">GitHub</span>
+        </a>
+        <a class="f-social-btn" href="mailto:abhijain@example.com" aria-label="Send us an email">
+          <svg class="f-social-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3"/><polyline points="2,4 12,13 22,4"/></svg>
+          <span class="f-social-tip">Email us</span>
+        </a>
+        <a class="f-social-btn" href="https://arbitrage-xi-nine.vercel.app" target="_blank" rel="noopener" aria-label="View live site on Vercel">
+          <svg class="f-social-icon" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true"><path d="M256 48L496 464H16L256 48z"/></svg>
+          <span class="f-social-tip">Live site</span>
+        </a>
+        <a class="f-social-btn" href="https://x.com" target="_blank" rel="noopener" aria-label="Follow on X">
+          <svg class="f-social-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          <span class="f-social-tip">X (Twitter)</span>
+        </a>
+      </div>
     </div>
     <div class="f-links-group">
       <div class="f-link-col">
         <div class="f-link-title">PRODUCT</div>
-        <div class="f-link" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})" tabindex="0">How it works</div>
-        <div class="f-link" onclick="document.getElementById('math').scrollIntoView({behavior:'smooth'})" tabindex="0">The math</div>
-        <div class="f-link" onclick="document.getElementById('teaser').scrollIntoView({behavior:'smooth'})" tabindex="0">Live dashboard</div>
+        <button class="f-link" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">How it works</button>
+        <button class="f-link" onclick="document.getElementById('math').scrollIntoView({behavior:'smooth'})">The math</button>
+        <button class="f-link" onclick="document.getElementById('teaser').scrollIntoView({behavior:'smooth'})">Live dashboard</button>
       </div>
       <div class="f-link-col">
         <div class="f-link-title">GET STARTED</div>
-        <div class="f-link" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})" tabindex="0">Join waitlist</div>
-        <div class="f-link" tabindex="0">GitHub ↗</div>
-        <div class="f-link" tabindex="0">Contact</div>
+        <button class="f-link" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join waitlist</button>
+        <a class="f-link" href="dashboard.html">Open dashboard</a>
       </div>
     </div>
   </div>
+
   <div class="f-bottom">
-    <div class="f-note">Built by Abhi & Aakash · 2026 · All prices shown are indicative</div>
-    <div class="f-badges">
-      <div class="f-badge live">LIVE</div>
-      <div class="f-badge">Kalshi</div>
-      <div class="f-badge">Polymarket</div>
-      <div class="f-badge">fuse.js</div>
+    <div class="f-note">Built by Abhi &amp; Aakash · 2026 · All prices shown are indicative</div>
+    <div class="f-bottom-right">
+      <div class="f-badges">
+        <div class="f-badge live">LIVE</div>
+        <div class="f-badge">Kalshi</div>
+        <div class="f-badge">Polymarket</div>
+        <div class="f-badge">fuse.js</div>
+      </div>
+      <div class="f-legal">
+        <a class="f-legal-link" href="#">Privacy</a>
+        <span class="f-legal-sep">·</span>
+        <a class="f-legal-link" href="#">Terms</a>
+      </div>
     </div>
   </div>
 </footer>

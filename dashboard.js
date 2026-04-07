@@ -101,13 +101,17 @@ function renderOpps(ops){
     const bw=Math.min((o.profit/.05)*100,100).toFixed(0)
     const isNew=!prevKeys.has(o.short)
     const alive=aliveMap[o.short]||1
-    return`<div class="ocard${h?' hot':''}${isNew?' flash':''}">
+    const truncName = o.market.length > 52 ? o.market.substring(0,50)+'…' : o.market
+    const fullName  = o.market
+    const needsExpand = o.market.length > 52
+    return`<div class="ocard${h?' hot':''}${isNew?' flash':''}" aria-label="Arbitrage opportunity: ${o.market}">
       <div class="oc-top">
         ${h?'<div class="oc-hot">best edge</div>':'<div></div>'}
         <div class="oc-alive">seen ${alive}×</div>
       </div>
       <div class="oc-pct${h?'':' dim'}">+${p}%</div>
-      <div class="oc-name">${shorten(o.market)}</div>
+      <div class="oc-name" title="${fullName}" ${needsExpand?`onclick="this.textContent=this.textContent.endsWith('…')?'${fullName.replace(/'/g,"'").replace(/"/g,'&quot;')}':'${truncName.replace(/'/g,"'").replace(/"/g,'&quot;')}';this.style.cursor='pointer'" style="cursor:pointer"`:''} role="${needsExpand?'button':''}"
+        ${needsExpand?`aria-label="Expand market name"`:''}>${truncName}</div>
       <div class="oc-bar"><div class="oc-bar-fill" style="width:${bw}%"></div></div>
       <div class="oc-pills">
         <div class="oc-pill">YES (${platformALabel}) <b>${o.yesPrice.toFixed(2)}</b></div>
@@ -116,6 +120,10 @@ function renderOpps(ops){
       </div>
       <div class="oc-hint">On $10,000 → guaranteed <span>$${Math.round(10000*o.profit)}</span></div>
       <div class="oc-fresh">prices at ${now}</div>
+      <div class="oc-trade-links">
+        <a class="oc-trade-btn" href="https://kalshi.com" target="_blank" rel="noopener" aria-label="Trade YES on Kalshi">Trade YES on Kalshi ↗</a>
+        <a class="oc-trade-btn" href="https://polymarket.com" target="_blank" rel="noopener" aria-label="Trade NO on Polymarket">Trade NO on Polymarket ↗</a>
+      </div>
     </div>`
   }).join('')
   ops.forEach(o=>{aliveMap[o.short]=(aliveMap[o.short]||0)+1})
@@ -254,9 +262,16 @@ async function scan(){
     renderNear(currentNearMisses)
     renderWeek(currentWeekCandidates)
     addLog(now,d.opportunities)
+    // Hide the mock banner once we get live data
+    const banner = document.getElementById('mock-banner')
+    if (banner) banner.style.display = 'none'
   }catch(e){
     dtimeh.textContent='mock — server offline'
-    updatePairCounters(0)
+    // Show mock banner to inform users this is sample data
+    const banner = document.getElementById('mock-banner')
+    if (banner) banner.style.display = 'flex'
+    // In mock mode, show how many mock entries we have (not 0)
+    updatePairCounters(mock.length)
     updatePlatformBadges({ opportunities: [] })
     currentNearMisses = nearMock
     currentWeekCandidates = weekMock
