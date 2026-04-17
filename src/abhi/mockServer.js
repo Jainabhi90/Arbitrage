@@ -1,10 +1,41 @@
 const http = require('http')
+const fs = require('fs')
+const path = require('path')
 const { fetchKalshiMarkets } = require('./first')
 const { fetchPolyMarkets } = require('./second')
 const { convertKalshi, convertPolymarket } = require('./converter')
 const { matchMarkets } = require('./eventMatcher')
 const { detectArb } = require('./detectArb')
 const { registerOrder } = require('./orderRouter')
+
+// Root of the project (two levels up from src/abhi/)
+const PROJECT_ROOT = path.resolve(__dirname, '..', '..')
+
+const MIME_TYPES = {
+  '.html': 'text/html',
+  '.css':  'text/css',
+  '.js':   'application/javascript',
+  '.json': 'application/json',
+  '.png':  'image/png',
+  '.jpg':  'image/jpeg',
+  '.svg':  'image/svg+xml',
+  '.ico':  'image/x-icon'
+}
+
+function serveStatic(res, filePath) {
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      res.statusCode = 404
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: 'Not found' }))
+      return
+    }
+    const ext = path.extname(filePath).toLowerCase()
+    res.statusCode = 200
+    res.setHeader('Content-Type', MIME_TYPES[ext] || 'application/octet-stream')
+    res.end(data)
+  })
+}
 
 const PORT = Number(process.env.PORT || 3000)
 const TOPIC = (process.env.ARBITRAGE_TOPIC || 'election').toLowerCase()
@@ -229,12 +260,28 @@ async function handleRequest(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-  res.setHeader('Content-Type', 'application/json')
 
   if (req.method === 'OPTIONS') {
+    res.setHeader('Content-Type', 'application/json')
     sendJson(res, 204, {})
     return
   }
+
+  // Serve static files for GET requests that look like pages/assets
+  if (req.method === 'GET') {
+    const urlPath = req.url.split('?')[0]  // strip query string
+    if (urlPath === '/' || urlPath === '') {
+      serveStatic(res, path.join(PROJECT_ROOT, 'index.html'))
+      return
+    }
+    const ext = path.extname(urlPath).toLowerCase()
+    if (ext && MIME_TYPES[ext]) {
+      serveStatic(res, path.join(PROJECT_ROOT, urlPath))
+      return
+    }
+  }
+
+  res.setHeader('Content-Type', 'application/json')
 
   if (req.method === 'GET' && req.url === '/opportunities') {
     sendJson(res, 200, {
