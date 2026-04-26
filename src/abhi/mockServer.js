@@ -8,6 +8,27 @@ const { matchMarkets } = require('./eventMatcher')
 const { detectArb } = require('./detectArb')
 const { registerOrder } = require('./orderRouter')
 
+// ─── RATE LIMITING ──────────────────────────────────────────────────────────
+const requestCounts = new Map()
+const RATE_LIMIT_WINDOW_MS = 60 * 1000
+const RATE_LIMIT_MAX_REQUESTS = 100
+
+function checkRateLimit(ip) {
+  const now = Date.now()
+  if (!requestCounts.has(ip)) {
+    requestCounts.set(ip, [])
+  }
+  const requests = requestCounts.get(ip)
+  const recentRequests = requests.filter(t => now - t < RATE_LIMIT_WINDOW_MS)
+  
+  if (recentRequests.length >= RATE_LIMIT_MAX_REQUESTS) {
+    return false
+  }
+  recentRequests.push(now)
+  requestCounts.set(ip, recentRequests)
+  return true
+}
+
 // Root of the project (two levels up from src/abhi/)
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..')
 
@@ -257,9 +278,25 @@ scanMarkets()
 setInterval(scanMarkets, SCAN_INTERVAL_MS)
 
 async function handleRequest(req, res) {
+  // Get client IP for rate limiting
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '0.0.0.0'
+  const clientIp = String(ip).split(',')[0].trim()
+
+  // Check rate limit
+  if (!checkRateLimit(clientIp)) {
+    res.statusCode = 429
+    res.setHeader('Retry-After', '60')
+    res.end(JSON.stringify({ error: 'Rate limit exceeded' }))
+    return
+  }
+
+  // Security headers
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('X-XSS-Protection', '1; mode=block')
 
   if (req.method === 'OPTIONS') {
     res.setHeader('Content-Type', 'application/json')

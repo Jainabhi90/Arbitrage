@@ -106,6 +106,22 @@ ArbDetector is a full-stack arbitrage scanner for prediction markets. It continu
 npm install
 ```
 
+### Setup Environment Variables
+
+1. Copy the example file:
+```bash
+cp .env.example .env
+```
+
+2. Edit `.env` and fill in your actual API keys and secrets:
+```bash
+nano .env  # or your preferred editor
+```
+
+3. **Never commit `.env` to Git** - it's in `.gitignore` for protection
+
+See [SECURITY.md](SECURITY.md) for detailed security guidelines.
+
 ### Run
 
 ```bash
@@ -129,17 +145,27 @@ Common variables used by the scanner:
 - `KALSHI_BASE_URL`
 - `POLY_BASE_URL`
 
-Order routing variables:
+Order routing variables (keep in `.env` only):
 
 - `KALSHI_ORDER_API_URL`, `KALSHI_ORDER_API_KEY`, `KALSHI_ORDER_API_SECRET`
 - `POLYMARKET_ORDER_API_URL`, `POLYMARKET_ORDER_API_KEY`, `POLYMARKET_ORDER_API_SECRET`
 
-Telegram variables:
+Telegram variables (keep in `.env` only):
 
 - `TELEGRAM_BOT_TOKEN`
+
+For all available variables, see `.env.example`.
+
+## Security
+
+⚠️ **This project handles sensitive API credentials.** Read [SECURITY.md](SECURITY.md) for:
+- How to protect your `.env` file
+- What to do if secrets are accidentally committed
+- Best practices for deploying to production
 
 ## Notes
 
 - If external APIs are unavailable, the dashboard falls back to sample data for demo continuity.
 - Matching and arbitrage decisions are topic-dependent (`ARBITRAGE_TOPIC`).
 - This project is intended for educational/prototyping use; evaluate execution, latency, and risk controls before production trading.
+- Rate limiting is enabled: 100 requests per minute per IP

@@ -63,12 +63,12 @@ async function submitToConfiguredEndpoint(platform, order) {
   }
 
   if (!response.ok) {
-    throw new Error(`${platform} order failed (${response.status}): ${responseText.slice(0, 200)}`)
+    // Don't expose sensitive endpoint details in error messages
+    throw new Error(`${platform} order failed (${response.status}). Check server logs for details.`)
   }
 
   return {
     platform,
-    endpoint,
     order,
     exchangeResponse: parsedBody
   }

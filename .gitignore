@@ -1,0 +1,68 @@
+# Environment Variables
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.classpath
+*.iml
+.sublime-project
+.sublime-workspace
+
+# Build & Distribution
+dist/
+build/
+*.tgz
+*.tar.gz
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Cache
+.cache/
+.next/
+out/
+
+# Runtime Data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Git
+.git/
+.gitkeep
+
+# Testing
+coverage/
+.nyc_output/
+
+# Misc
+.env.local
+.DS_Store
+config/secrets.json
