@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 
-let envLoaded = false
+const loadedPaths = new Set()
 
 function parseEnvLine(line) {
   const trimmed = String(line || '').trim()
@@ -39,26 +39,33 @@ function parseEnvLine(line) {
   return { key, value }
 }
 
-function loadEnv(envPath = path.resolve(__dirname, '..', '..', '.env')) {
-  if (envLoaded) {
-    return process.env
-  }
+function loadEnv(envPaths = [
+  path.resolve(__dirname, '..', '..', '.env'),
+  path.resolve(__dirname, 'telegram', '.env')
+]) {
+  const paths = Array.isArray(envPaths) ? envPaths : [envPaths]
 
-  envLoaded = true
+  for (const envPath of paths) {
+    const resolvedPath = path.resolve(envPath)
+    if (loadedPaths.has(resolvedPath)) {
+      continue
+    }
+    loadedPaths.add(resolvedPath)
 
-  if (!fs.existsSync(envPath)) {
-    return process.env
-  }
-
-  const raw = fs.readFileSync(envPath, 'utf8')
-  for (const line of raw.split(/\r?\n/)) {
-    const parsed = parseEnvLine(line)
-    if (!parsed) {
+    if (!fs.existsSync(resolvedPath)) {
       continue
     }
 
-    if (process.env[parsed.key] === undefined) {
-      process.env[parsed.key] = parsed.value
+    const raw = fs.readFileSync(resolvedPath, 'utf8')
+    for (const line of raw.split(/\r?\n/)) {
+      const parsed = parseEnvLine(line)
+      if (!parsed) {
+        continue
+      }
+
+      if (process.env[parsed.key] === undefined) {
+        process.env[parsed.key] = parsed.value
+      }
     }
   }
 
