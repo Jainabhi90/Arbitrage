@@ -2,8 +2,9 @@
   "name": "arbitrage",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/abhi/mockServer.js",
   "scripts": {
+    "start": "node src/abhi/mockServer.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

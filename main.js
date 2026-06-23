@@ -1,7 +1,25 @@
 // ─── DYNAMIC API URL ─────────────────────────────────────────────────────────
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-  ? 'http://localhost:3000' 
-  : 'https://api.arbdetector.com'; 
+function resolveApiUrl() {
+  if (window.ARB_API_URL) {
+    return window.ARB_API_URL
+  }
+
+  const host = window.location.hostname
+  const origin = window.location.origin
+  if (origin === 'null') {
+    return 'http://localhost:3000'
+  }
+
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return window.location.port && window.location.port !== '3000'
+      ? 'http://localhost:3000'
+      : origin
+  }
+
+  return origin
+}
+
+const API_URL = resolveApiUrl()
 
 // ─── BEAM ANIMATION ─────────────────────────────────────────────────────────
 const canvas = document.getElementById('beams-canvas')
@@ -296,4 +314,3 @@ document.addEventListener('click', function(e){
     btn.setAttribute('aria-expanded','false')
   }
 })
-

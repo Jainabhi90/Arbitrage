@@ -1,3 +1,7 @@
+const { loadEnv } = require('./loadEnv')
+
+loadEnv()
+
 const http = require('http')
 const fs = require('fs')
 const path = require('path')
@@ -7,6 +11,12 @@ const { convertKalshi, convertPolymarket } = require('./converter')
 const { matchMarkets } = require('./eventMatcher')
 const { detectArb } = require('./detectArb')
 const { registerOrder } = require('./orderRouter')
+const { getActiveChatIds } = require('./telegram/adding')
+const { processTelegramUpdate } = require('./telegram/App')
+const {
+  sendTelegramBroadcast,
+  formatArbitrageMessage
+} = require('./telegram/sending')
 
 // ─── RATE LIMITING ──────────────────────────────────────────────────────────
 const requestCounts = new Map()
@@ -59,6 +69,7 @@ function serveStatic(res, filePath) {
 }
 
 const PORT = Number(process.env.PORT || 3000)
+const HOST = process.env.HOST || (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1')
 const TOPIC = (process.env.ARBITRAGE_TOPIC || 'election').toLowerCase()
 const SCAN_INTERVAL_MS = Number(process.env.SCAN_INTERVAL_MS || 5000)
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000
@@ -73,6 +84,7 @@ let latestArbStatus = {
   scannedAt: null
 }
 let lastScanned = null
+let lastTelegramSignature = ''
 let lastScanStats = {
   totalPairs: 0,
   platformACount: 0,
@@ -121,6 +133,51 @@ function formatTimeLeft(ms) {
 function sendJson(res, statusCode, payload) {
   res.statusCode = statusCode
   res.end(JSON.stringify(payload))
+}
+
+function buildTelegramSignature(opportunities) {
+  return opportunities
+    .slice(0, 3)
+    .map(opportunity => {
+      const short = String(opportunity.short || opportunity.market || 'market')
+      const profit = Number(opportunity.profit || 0).toFixed(4)
+      return `${short}:${profit}`
+    })
+    .join('|')
+}
+
+async function maybeSendTelegramAlert(opportunities) {
+  const topOpportunities = Array.isArray(opportunities) ? opportunities.slice(0, 3) : []
+  if (!topOpportunities.length) {
+    lastTelegramSignature = ''
+    return
+  }
+
+  const telegramToken = String(process.env.TELEGRAM_BOT_TOKEN || '').trim()
+  const activeSubscribers = getActiveChatIds()
+  if (!telegramToken || !activeSubscribers.length) {
+    lastTelegramSignature = ''
+    return
+  }
+
+  const signature = buildTelegramSignature(topOpportunities)
+  if (!signature || signature === lastTelegramSignature) {
+    return
+  }
+
+  lastTelegramSignature = signature
+  const message = formatArbitrageMessage(topOpportunities, {
+    topic: TOPIC,
+    scannedAt: lastScanned || new Date().toLocaleTimeString()
+  })
+
+  const result = await sendTelegramBroadcast(message, activeSubscribers)
+  if (result?.sent) {
+    lastTelegramSignature = signature
+    console.log(`Telegram alert sent to ${result.sent}/${result.total} subscriber(s).`)
+  } else if (result?.failed) {
+    console.log(`Telegram alert failed for ${result.failed}/${result.total} subscriber(s).`)
+  }
 }
 
 function readJsonBody(req) {
@@ -261,6 +318,8 @@ async function scanMarkets() {
       platformBCount: platformB.length
     }
 
+    await maybeSendTelegramAlert(latestOpportunities)
+
     console.log(
       `Scan complete. ${pairs.length} pairs checked. ${opportunities.length} arb found. ` +
       `A=${platformA.length}, B=${platformB.length}.`
@@ -320,6 +379,18 @@ async function handleRequest(req, res) {
 
   res.setHeader('Content-Type', 'application/json')
 
+  if (req.method === 'POST' && req.url === '/telegram/webhook') {
+    try {
+      const payload = await readJsonBody(req)
+      await processTelegramUpdate(payload)
+    } catch (error) {
+      console.error('Telegram webhook error:', error.message)
+    }
+
+    sendJson(res, 200, { ok: true })
+    return
+  }
+
   if (req.method === 'GET' && req.url === '/opportunities') {
     sendJson(res, 200, {
       opportunities: latestOpportunities,
@@ -370,6 +441,6 @@ const server = http.createServer((req, res) => {
   })
 })
 
-server.listen(PORT, () => {
-  console.log(`Scanner running at http://localhost:${PORT}`)
+server.listen(PORT, HOST, () => {
+  console.log(`Scanner running at http://${HOST}:${PORT}`)
 })

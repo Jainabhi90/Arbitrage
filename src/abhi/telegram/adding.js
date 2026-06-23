@@ -1,18 +1,65 @@
-const arr = [];
+const arr = []
 
-function add(chatid, status) {
-const data = {};
-  data.chatid = chatid;
-  data.status = status;
- const user = arr.find(u => u.chatid === chatid);
+function normalizeChatId(chatid) {
+  return String(chatid ?? '').trim()
+}
 
-if (user) {
-  user.status = status;
-}else{
-  arr.push(data);}
+function normalizeStatus(status) {
+  return String(status ?? '').trim().toLowerCase()
+}
+
+function add(chatid, status = 'start') {
+  const normalizedChatId = normalizeChatId(chatid)
+  if (!normalizedChatId) {
+    return null
+  }
+
+  const normalizedStatus = normalizeStatus(status) || 'start'
+  const nextRecord = {
+    chatid: normalizedChatId,
+    status: normalizedStatus === '/start' ? 'start' : normalizedStatus
+  }
+
+  const existing = arr.find(user => user.chatid === normalizedChatId)
+  if (existing) {
+    existing.status = nextRecord.status
+    return existing
+  }
+
+  arr.push(nextRecord)
+  return nextRecord
+}
+
+function remove(chatid) {
+  const normalizedChatId = normalizeChatId(chatid)
+  if (!normalizedChatId) {
+    return false
+  }
+
+  const index = arr.findIndex(user => user.chatid === normalizedChatId)
+  if (index === -1) {
+    return false
+  }
+
+  arr.splice(index, 1)
+  return true
+}
+
+function isActive(chatid) {
+  const normalizedChatId = normalizeChatId(chatid)
+  return arr.some(user => user.chatid === normalizedChatId && user.status === 'start')
+}
+
+function getActiveChatIds() {
+  return arr
+    .filter(user => user.status === 'start')
+    .map(user => user.chatid)
 }
 
 module.exports = {
   arr,
-  add
-};
+  add,
+  remove,
+  isActive,
+  getActiveChatIds
+}

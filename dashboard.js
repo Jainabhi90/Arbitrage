@@ -1,6 +1,24 @@
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-  ? 'http://localhost:3000' 
-  : 'https://api.arbdetector.com'; 
+function resolveApiUrl() {
+  if (window.ARB_API_URL) {
+    return window.ARB_API_URL
+  }
+
+  const host = window.location.hostname
+  const origin = window.location.origin
+  if (origin === 'null') {
+    return 'http://localhost:3000'
+  }
+
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return window.location.port && window.location.port !== '3000'
+      ? 'http://localhost:3000'
+      : origin
+  }
+
+  return origin
+}
+
+const API_URL = resolveApiUrl()
 const UI_SCAN_SECONDS = 3
 
 let scanN=0,total=0,cd=UI_SCAN_SECONDS,paused=false,bestP=0.016

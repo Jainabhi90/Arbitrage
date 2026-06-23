@@ -2,10 +2,27 @@
 
 ArbDetector is a full-stack arbitrage scanner for prediction markets. It continuously scans Kalshi and Polymarket, matches equivalent markets across both platforms, and surfaces fee-adjusted arbitrage opportunities in near real time.
 
-## Live Site
+## Deployment
 
-- Landing page: https://arbitrage-xi-nine.vercel.app/
-- Dashboard: https://arbitrage-xi-nine.vercel.app/dashboard.html
+### Recommended: one Render web service
+
+This project is easiest to deploy as a single Node service:
+
+- The backend scanner serves the frontend pages.
+- The API and UI stay on the same origin.
+- Telegram webhook handling works from the same deployed service.
+
+Deploy steps:
+
+1. Push this repo to GitHub.
+2. Create a new Render Web Service from the repo.
+3. Use the defaults from [render.yaml](render.yaml):
+   - Build command: `npm install`
+   - Start command: `npm start`
+4. Add your secrets in Render's environment settings:
+   - `TELEGRAM_BOT_TOKEN`
+   - Kalshi / Polymarket order API keys if you use them
+5. After deploy, open the service URL and the dashboard will use the same origin automatically.
 
 ## What This Project Does
 
@@ -71,8 +88,8 @@ ArbDetector is a full-stack arbitrage scanner for prediction markets. It continu
 
 ### Telegram Integration (Alert Foundation)
 
-- `src/abhi/telegram/App.js`: Telegram webhook receiver
-- `src/abhi/telegram/adding.js`: chat subscription state
+- `src/abhi/telegram/App.js`: Telegram webhook receiver and `/start` / `/stop` subscription handler
+- `src/abhi/telegram/adding.js`: in-memory chat subscription state
 - `src/abhi/telegram/sending.js`: broadcast message sender to active subscribers
 
 ## High-Level Data Flow
@@ -138,6 +155,7 @@ Open:
 Common variables used by the scanner:
 
 - `PORT` (default: `3000`)
+- `HOST` (default: `127.0.0.1` in development, `0.0.0.0` in production)
 - `ARBITRAGE_TOPIC` (default: `election`)
 - `SCAN_INTERVAL_MS` (default: `5000`)
 - `KALSHI_FEE` (default: `0.02`)
@@ -153,6 +171,13 @@ Order routing variables (keep in `.env` only):
 Telegram variables (keep in `.env` only):
 
 - `TELEGRAM_BOT_TOKEN`
+
+Telegram alerts are wired into the scanner at `POST /telegram/webhook`.
+The main scanner sends alerts automatically when a new arbitrage opportunity appears.
+To subscribe, send `/start` to your bot after pointing your Telegram webhook at the running server.
+
+For local development, the frontend falls back to `http://localhost:3000` when it is served from a separate static server.
+For deployed environments, it automatically uses the current site origin.
 
 For all available variables, see `.env.example`.
 
